@@ -27,6 +27,9 @@ Plug 'ryanoasis/vim-devicons'
 Plug 'yuezk/vim-js'
 Plug 'maxmellon/vim-jsx-pretty'
 
+" Fugitive
+Plug 'tpope/vim-fugitive'
+
 call plug#end()
 
 " default setting
@@ -47,6 +50,8 @@ set noswapfile
 set smartcase
 set incsearch
 set scrolloff=10
+set splitright
+set splitbelow
 
 " custom remaps
 let mapleader = " "
