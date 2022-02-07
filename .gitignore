@@ -3,4 +3,5 @@
 
 # except specific dotfiles
 !.vimrc
+!.init.vim
 !.gitignore
