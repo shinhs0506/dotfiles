@@ -29,39 +29,41 @@ vim.opt.errorbells=false
 vim.opt.encoding="utf-8"
 
 -- plugins
-require("paq") {
-    'sainnhe/gruvbox-material';
+require("packer").startup(function (use)
+    use 'wbthomason/packer.nvim'
 
-    'neovim/nvim-lspconfig';
-    'williamboman/nvim-lsp-installer';
-    'hrsh7th/cmp-nvim-lsp';
-    'hrsh7th/cmp-buffer';
-    'hrsh7th/cmp-path';
-    'hrsh7th/cmp-cmdline';
-    'hrsh7th/nvim-cmp';
-    'L3MON4D3/LuaSnip';
-    'saadparwaiz1/cmp_luasnip';
+    use 'sainnhe/gruvbox-material';
 
-    {'nvim-treesitter/nvim-treesitter', run=function() vim.cmd('TSUpdate') end};
+    use 'neovim/nvim-lspconfig';
+    use 'williamboman/nvim-lsp-installer';
+    use 'hrsh7th/cmp-nvim-lsp';
+    use 'hrsh7th/cmp-buffer';
+    use 'hrsh7th/cmp-path';
+    use 'hrsh7th/cmp-cmdline';
+    use 'hrsh7th/nvim-cmp';
+    use 'L3MON4D3/LuaSnip';
+    use 'saadparwaiz1/cmp_luasnip';
 
-    'windwp/nvim-autopairs';
+    use {'nvim-treesitter/nvim-treesitter', run=':TSUpdate'};
 
-    'tpope/vim-commentary';
+    use 'windwp/nvim-autopairs';
 
-    'nvim-lua/plenary.nvim';
-    'nvim-telescope/telescope.nvim';
+    use 'tpope/vim-commentary';
 
-    'sindrets/diffview.nvim';
+    use 'nvim-lua/plenary.nvim';
+    use {'nvim-telescope/telescope.nvim', tag='nvim-0.6', commit='d88094f'};
 
-    'akinsho/toggleterm.nvim';
+    use 'sindrets/diffview.nvim';
 
-    'tpope/vim-fugitive';
-    'lewis6991/gitsigns.nvim';
+    use 'akinsho/toggleterm.nvim';
 
-    'kyazdani42/nvim-tree.lua';
+    use 'tpope/vim-fugitive';
+    use 'lewis6991/gitsigns.nvim';
 
-    'nvim-lualine/lualine.nvim';
-}
+    use 'kyazdani42/nvim-tree.lua';
+
+    use 'nvim-lualine/lualine.nvim';
+end)
 
 -- colorscheme
 vim.cmd [[silent! colorscheme gruvbox-material]]
@@ -272,6 +274,8 @@ require('telescope').setup {
 require('diffview').setup {}
 
 map('n', '<leader>fd', ':DiffviewOpen <CR>', { noremap=true, silent=true});
+map('n', '<leader>fdu', ':DiffviewOpen upstream/main...HEAD <CR>', { noremap=true, silent=true});
+map('n', '<leader>fdo', ':DiffviewOpen origin/main...HEAD <CR>', { noremap=true, silent=true});
 map('n', '<leader>fc', ':DiffviewClose <CR>', { noremap=true, silent=true});
 map('n', '<leader>fh', ':DiffviewFileHistory <CR>', { noremap=true, silent=true});
 
