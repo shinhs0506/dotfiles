@@ -3,9 +3,9 @@ vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.softtabstop = 0
 vim.opt.expandtab = true
-vim.opt.smarttab = true
+vim.opt.smarttab = false
 vim.opt.autoindent = true
-vim.opt.smartindent = true
+vim.opt.smartindent = false
 
 vim.opt.ignorecase = true
 vim.opt.incsearch = true
@@ -36,6 +36,7 @@ require("packer").startup(function(use)
 
     use 'sainnhe/gruvbox-material';
     use 'navarasu/onedark.nvim';
+    use 'catppuccin/nvim';
 
     use 'neovim/nvim-lspconfig';
     use 'williamboman/nvim-lsp-installer';
@@ -49,38 +50,45 @@ require("packer").startup(function(use)
 
     use 'ray-x/lsp_signature.nvim'
 
-    use 'jose-elias-alvarez/null-ls.nvim'
-
-    use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' };
-
     use 'windwp/nvim-autopairs';
 
+    use 'jose-elias-alvarez/null-ls.nvim'
+
     use 'tpope/vim-commentary';
+    use 'tpope/vim-surround';
+
+    use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' };
+    use 'nvim-treesitter/nvim-treesitter-context';
 
     use 'nvim-lua/plenary.nvim';
-    use { 'nvim-telescope/telescope.nvim', tag = 'nvim-0.6', commit = 'd88094f' };
-
-    use 'sindrets/diffview.nvim';
+    use 'nvim-telescope/telescope.nvim';
 
     use 'tpope/vim-fugitive';
     use 'lewis6991/gitsigns.nvim';
+    use 'kdheepak/lazygit.nvim';
 
     use 'kyazdani42/nvim-web-devicons';
     use 'kyazdani42/nvim-tree.lua';
 
+    use 'liuchengxu/vista.vim';
+
     use 'lukas-reineke/indent-blankline.nvim';
 
     use 'nvim-lualine/lualine.nvim';
+
+    use 'simeji/winresizer';
 end)
 
 -- colorscheme
 require('onedark').setup{
     style = 'darker',
+    transparent = false,
     diagnostics = {
         background = false,
     }
 }
 require('onedark').load()
+
 -- vim.cmd [[silent! colorscheme gruvbox-material]]
 -- vim.opt.background = "dark"
 -- vim.g.gruvbox_material_diagnostic_virtual_text = 1
@@ -127,6 +135,7 @@ local on_attach = function(client, bufnr)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>gi', '<cmd>Telescope lsp_implementations<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<C-h>', "<cmd>lua vim.lsp.buf.hover()<CR>", opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>fs', '<cmd>Telescope lsp_document_symbols<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
@@ -140,11 +149,7 @@ local luasnip = require("luasnip")
 
 local check_back_space = function()
     local col = vim.fn.col('.') - 1
-    if col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') then
-        return false
-    else
-        return true
-    end
+    return col == 0 or vim.fn.getline('.'):sub(col, col):match('%s')
 end
 
 cmp.setup({
@@ -154,7 +159,7 @@ cmp.setup({
         end
     },
     mapping = cmp.mapping.preset.insert({
-        ['<CR>'] = cmp.mapping.confirm({ select = true }),
+        ['<CR>'] = cmp.mapping.confirm({ select = false }),
         ['<Tab>'] = cmp.mapping(function(fallback)
             if cmp.visible() then
                 cmp.select_next_item()
@@ -252,6 +257,24 @@ require('nvim-treesitter.configs').setup {
     },
     indent = {
         enable = false,
+    },
+    autotag = {
+        enable = true,
+    }
+}
+
+require('treesitter-context').setup {
+    patterns = {
+        default = {
+            'class',
+            'function',
+            'method',
+            'for',
+            'while',
+            'if',
+            'switch',
+            'case'
+        }
     }
 }
 
@@ -283,15 +306,6 @@ require('telescope').setup {
     }
 }
 
--- diffview
-require('diffview').setup {}
-
-map('n', '<leader>fd', ':DiffviewOpen <CR>', { noremap = true, silent = true });
-map('n', '<leader>fdu', ':DiffviewOpen upstream/main...HEAD <CR>', { noremap = true, silent = true });
-map('n', '<leader>fdo', ':DiffviewOpen origin/main...HEAD <CR>', { noremap = true, silent = true });
-map('n', '<leader>fc', ':DiffviewClose <CR>', { noremap = true, silent = true });
-map('n', '<leader>fh', ':DiffviewFileHistory <CR>', { noremap = true, silent = true });
-
 -- git sign
 require('gitsigns').setup {
     signs = {
@@ -302,6 +316,9 @@ require('gitsigns').setup {
         changedelet = { text = '~' },
     }
 }
+
+-- lazygit nvim
+map('n', '<C-g>', ':LazyGit<CR>', { noremap = true, silent = true });
 
 -- diagnostic sings
 local signs = {
@@ -317,7 +334,19 @@ for type, icon in pairs(signs) do
 end
 
 -- Nvim tree
-require('nvim-tree').setup {}
+require('nvim-tree').setup {
+    renderer = {
+        indent_markers = {
+            enable = true,
+            icons = {
+                corner = "└ ",
+                edge = "│ ",
+                none = "  ",
+            }
+        }
+    }
+}
+
 map('n', '<leader>nt', ':NvimTreeToggle<CR>', { noremap = true, silent = true });
 map('n', '<leader>nr', ':NvimTreeRefresh<CR>', { noremap = true, silent = true });
 map('n', '<leader>nf', ':NvimTreeFindFile<CR>', { noremap = true, silent = true });
@@ -330,7 +359,12 @@ require('lualine').setup {
     sections = {
         lualine_a = {'mode'},
         lualine_b = {'branch', 'diff', 'diagnostics'},
-        lualine_c = {'filename'},
+        lualine_c = {
+            {
+                'filename',
+                path = 1
+            }
+        },
         lualine_x = {},
         lualine_y = {},
         lualine_z = {},
@@ -338,3 +372,7 @@ require('lualine').setup {
 }
 
 vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {border = "rounded"})
+
+-- winresizer
+vim.g.winresizer_vert_size = 5
+vim.g.winresizer_horiz_resize = 1
