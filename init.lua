@@ -70,13 +70,13 @@ require("packer").startup(function(use)
     use 'kyazdani42/nvim-web-devicons';
     use 'kyazdani42/nvim-tree.lua';
 
-    use 'liuchengxu/vista.vim';
-
     use 'lukas-reineke/indent-blankline.nvim';
 
     use 'nvim-lualine/lualine.nvim';
 
     use 'simeji/winresizer';
+
+    use 'iamcco/markdown-preview.nvim';
 end)
 
 -- colorscheme
@@ -115,6 +115,22 @@ map('n', '<leader>h', ':wincmd h<CR>', { noremap = false, silent = true })
 map('n', '<leader>j', ':wincmd j<CR>', { noremap = false, silent = true })
 map('n', '<leader>k', ':wincmd k<CR>', { noremap = false, silent = true })
 map('n', '<leader>l', ':wincmd l<CR>', { noremap = false, silent = true })
+
+-- tab management
+map('n', '<C-t>', ':tabnew <CR>', { noremap = false, silent = true })
+map('n', '<C-t>1', '1gt', { noremap = false, silent = true })
+map('n', '<C-t>2', '2gt', { noremap = false, silent = true })
+map('n', '<C-t>3', '3gt', { noremap = false, silent = true })
+map('n', '<C-t>4', '4gt', { noremap = false, silent = true })
+map('n', '<C-t>5', '5gt', { noremap = false, silent = true })
+map('n', '<C-t>6', '6gt', { noremap = false, silent = true })
+map('n', '<C-t>7', '7gt', { noremap = false, silent = true })
+map('n', '<C-t>8', '8gt', { noremap = false, silent = true })
+map('n', '<C-t>9', '9gt', { noremap = false, silent = true })
+map('n', '<C-t>0', '0gt', { noremap = false, silent = true })
+map('n', '<C-t>d', ':tabclose <CR>', { noremap = false, silent = true })
+map('n', '<C-t>n', ':tabnext <CR>', { noremap = false, silent = true })
+map('n', '<C-t>p', ':tabNext <CR>', { noremap = false, silent = true })
 
 -- lsp and autocomplete
 vim.cmd [[set completeopt=menu,menuone,noselect]]
@@ -165,8 +181,6 @@ cmp.setup({
                 cmp.select_next_item()
             elseif luasnip.expand_or_jumpable() then
                 luasnip.expand_or_jump()
-            elseif check_back_space() then
-                cmp.complete()
             else
                 fallback()
             end
@@ -222,7 +236,15 @@ local enhance_server_opts = {
                 }
             }
         }
-    end
+    end,
+
+    ["gopls"] = function(options)
+        options.settings = {
+            gopls = {
+                gofumpt = true
+            }
+        }
+    end,
 }
 
 local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
@@ -240,13 +262,16 @@ lsp_installer.on_server_ready(function(server)
     server:setup(server_opts)
 end)
 
-require('lsp_signature').setup()
+require('lsp_signature').setup({
+    hint_enable = false,
+})
 
 -- null-ls
 require('null-ls').setup {
     sources = {
-        require('null-ls').builtins.formatting.eslint_d,
-        require('null-ls').builtins.formatting.autopep8
+        require('null-ls').builtins.formatting.eslint,
+        require('null-ls').builtins.formatting.autopep8,
+        require('null-ls').builtins.formatting.gofumpt
     }
 }
 
