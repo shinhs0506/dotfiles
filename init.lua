@@ -1,7 +1,6 @@
 vim.cmd('filetype plugin indent on')
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
-vim.opt.softtabstop = 0
 vim.opt.expandtab = true
 vim.opt.smarttab = false
 vim.opt.autoindent = true
@@ -12,13 +11,11 @@ vim.opt.incsearch = true
 vim.opt.hlsearch = false
 
 vim.opt.scrolloff = 10
-vim.opt.cc = "80"
--- vim.opt.textwidth = 100
+vim.opt.cc = "120"
 
 vim.opt.cursorline = true
 vim.opt.number = true
 vim.opt.relativenumber = true
-
 vim.opt.wrap = false
 
 vim.opt.splitright = true
@@ -30,16 +27,21 @@ vim.opt.errorbells = false
 
 vim.opt.encoding = "utf-8"
 
+vim.opt.cmdheight = 0
+
+vim.opt.timeoutlen = 100
+
 -- plugins
 require("packer").startup(function(use)
-    use 'wbthomason/packer.nvim'
+    use 'wbthomason/packer.nvim';
 
     use 'sainnhe/gruvbox-material';
+    use 'ellisonleao/gruvbox.nvim'
     use 'navarasu/onedark.nvim';
-    use 'catppuccin/nvim';
+    use 'EdenEast/nightfox.nvim';
+    use { 'catppuccin/nvim', as='catppuccin' };
 
     use 'neovim/nvim-lspconfig';
-    use 'williamboman/nvim-lsp-installer';
     use 'hrsh7th/cmp-nvim-lsp';
     use 'hrsh7th/cmp-buffer';
     use 'hrsh7th/cmp-path';
@@ -48,11 +50,12 @@ require("packer").startup(function(use)
     use 'L3MON4D3/LuaSnip';
     use 'saadparwaiz1/cmp_luasnip';
 
-    use 'ray-x/lsp_signature.nvim'
+    use 'williamboman/mason.nvim';
+    use 'williamboman/mason-lspconfig.nvim';
+    use 'jose-elias-alvarez/null-ls.nvim';
+    use 'jayp0521/mason-null-ls.nvim';
 
     use 'windwp/nvim-autopairs';
-
-    use 'jose-elias-alvarez/null-ls.nvim'
 
     use 'tpope/vim-commentary';
     use 'tpope/vim-surround';
@@ -62,6 +65,8 @@ require("packer").startup(function(use)
 
     use 'nvim-lua/plenary.nvim';
     use 'nvim-telescope/telescope.nvim';
+
+    use 'folke/which-key.nvim';
 
     use 'tpope/vim-fugitive';
     use 'lewis6991/gitsigns.nvim';
@@ -77,21 +82,63 @@ require("packer").startup(function(use)
     use 'simeji/winresizer';
 
     use 'iamcco/markdown-preview.nvim';
+
+    use { 'akinsho/toggleterm.nvim', tag='*' }
 end)
 
 -- colorscheme
-require('onedark').setup{
-    style = 'darker',
-    transparent = false,
-    diagnostics = {
-        background = false,
-    }
-}
-require('onedark').load()
-
 -- vim.cmd [[silent! colorscheme gruvbox-material]]
+-- vim.cmd [[silent! colorscheme gruvbox]]
 -- vim.opt.background = "dark"
 -- vim.g.gruvbox_material_diagnostic_virtual_text = 1
+
+-- require('onedark').setup{
+--     style = 'cool',
+--     transparent = false,
+--     diagnostics = {
+--         background = false,
+--     }
+-- }
+-- require('onedark').load()
+
+require('catppuccin').setup {
+    flavour = "frappe",
+    dim_inactive = {
+        enabled = true,
+        shade = 'dark',
+        percentage = 0.3
+    },
+    integrations = {
+        mason = true,
+        indent_blankline = {
+            enabled = true,
+            colored_indent_levels = false
+        },
+        native_lsp = {
+            enabled = true,
+            virtual_text = {
+                errors = { 'italic' },
+                hints = { 'italic' },
+                warnings = { 'italic' },
+                information = { 'italic' }
+            },
+            underline = {
+                errors = { 'underline' },
+                hints = { 'underline' },
+                warnings = { 'underline' },
+                information = { 'underline' }
+            }
+        },
+        treesitter = true,
+        treesitter_context = true,
+        gitsigns = true,
+        telescope = true,
+        cmp = true,
+        which_key = true,
+        nvimtree = true,
+    }
+}
+vim.cmd [[silent! colorscheme catppuccin-frappe]]
 
 local map = vim.api.nvim_set_keymap
 
@@ -117,7 +164,7 @@ map('n', '<leader>k', ':wincmd k<CR>', { noremap = false, silent = true })
 map('n', '<leader>l', ':wincmd l<CR>', { noremap = false, silent = true })
 
 -- tab management
-map('n', '<C-t>', ':tabnew <CR>', { noremap = false, silent = true })
+map('n', '<C-t>o', ':tabnew <CR>', { noremap = false, silent = true })
 map('n', '<C-t>1', '1gt', { noremap = false, silent = true })
 map('n', '<C-t>2', '2gt', { noremap = false, silent = true })
 map('n', '<C-t>3', '3gt', { noremap = false, silent = true })
@@ -134,7 +181,6 @@ map('n', '<C-t>p', ':tabNext <CR>', { noremap = false, silent = true })
 
 -- lsp and autocomplete
 vim.cmd [[set completeopt=menu,menuone,noselect]]
-local lsp_installer = require("nvim-lsp-installer")
 
 local on_attach = function(client, bufnr)
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
@@ -150,14 +196,14 @@ local on_attach = function(client, bufnr)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>gr', '<cmd>Telescope lsp_references<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>gi', '<cmd>Telescope lsp_implementations<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<C-h>', "<cmd>lua vim.lsp.buf.hover()<CR>", opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<C-s>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>fs', '<cmd>Telescope lsp_document_symbols<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>ca', "<cmd>lua vim.lsp.buf.code_action()<CR>", opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<C-f>', '<cmd>lua vim.lsp.buf.format()<CR>', opts)
 end
 
 local cmp = require("cmp")
@@ -194,6 +240,8 @@ cmp.setup({
                 fallback()
             end
         end, { 'i', 's' }),
+        ['<C-j>'] = cmp.mapping(cmp.mapping.scroll_docs(4), {"i", "c"}),
+        ['<C-k>'] = cmp.mapping(cmp.mapping.scroll_docs(-4), {"i", "c"}),
     }),
     sources = cmp.config.sources({
         { name = 'nvim_lsp' },
@@ -227,44 +275,39 @@ cmp.setup.cmdline(':', {
     })
 })
 
-local enhance_server_opts = {
-    ["sumneko_lua"] = function(options)
-        options.settings = {
-            Lua = {
-                diagnostics = {
-                    globals = { 'vim', 'require' }
-                }
-            }
-        }
-    end,
+local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
 
-    ["gopls"] = function(options)
-        options.settings = {
-            gopls = {
-                gofumpt = true
-            }
-        }
-    end,
+require('mason').setup()
+require('mason-lspconfig').setup {
+    ensure_installed = {
+        'bashls',
+        'clangd',
+        'cmake',
+        'tsserver',
+        'sumneko_lua',
+        'marksman',
+        'pyright',
+        'rust_analyzer'
+    }
 }
+require('mason-lspconfig').setup_handlers {
+    function(server)
+        require('lspconfig')[server].setup {
+            on_attach = on_attach,
+            capabilities = capabilities
+        }
+    end,
+    ['sumneko_lua'] = function ()
+        require('lspconfig')['sumneko_lua'].setup {
+            on_attach = on_attach,
+            capabilities = capabilities,
 
-local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
-
-lsp_installer.on_server_ready(function(server)
-    local server_opts = {}
-
-    server_opts.on_attach = on_attach
-    server_opts.capabilities = capabilities
-
-    if enhance_server_opts[server.name] then
-        enhance_server_opts[server.name](server_opts)
+            diagnostics = {
+                globals = { 'vim' }
+            }
+        }
     end
-
-    server:setup(server_opts)
-end)
-
-require('lsp_signature').setup({
-    hint_enable = false,
-})
+}
 
 -- null-ls
 require('null-ls').setup {
@@ -274,9 +317,24 @@ require('null-ls').setup {
         require('null-ls').builtins.formatting.gofumpt
     }
 }
+require('mason-null-ls').setup {}
 
 -- treesitter
 require('nvim-treesitter.configs').setup {
+    ensure_installed = {
+        'bash',
+        'c',
+        'cpp',
+        'cmake',
+        'go',
+        'html',
+        'javascript',
+        'json',
+        'markdown',
+        'python',
+        'rust',
+        'sql'
+    },
     highlight = {
         enable = true,
     },
@@ -327,9 +385,14 @@ require('telescope').setup {
         file_ignore_patterns = {
             "node_modules",
             "build",
+            "__pycache__",
+            "lib",
         },
     }
 }
+
+-- which key
+require('which-key').setup {}
 
 -- git sign
 require('gitsigns').setup {
@@ -379,7 +442,7 @@ map('n', '<leader>nf', ':NvimTreeFindFile<CR>', { noremap = true, silent = true 
 -- lualine
 require('lualine').setup {
     options = {
-        theme = 'onedark'
+        theme = 'catppuccin'
     },
     sections = {
         lualine_a = {'mode'},
@@ -401,3 +464,17 @@ vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {b
 -- winresizer
 vim.g.winresizer_vert_size = 5
 vim.g.winresizer_horiz_resize = 1
+
+-- toggleterm
+require('toggleterm').setup {}
+
+function _G.set_terminal_keymaps()
+  local opts = {buffer = 0}
+  vim.keymap.set('t', '<esc>', [[<C-\><C-n>]], opts)
+  vim.keymap.set('t', 'jk', [[<C-\><C-n>]], opts)
+  vim.keymap.set('t', '<C-h>', [[<Cmd>wincmd h<CR>]], opts)
+  vim.keymap.set('t', '<C-j>', [[<Cmd>wincmd j<CR>]], opts)
+  vim.keymap.set('t', '<C-k>', [[<Cmd>wincmd k<CR>]], opts)
+  vim.keymap.set('t', '<C-l>', [[<Cmd>wincmd l<CR>]], opts)
+end
+vim.cmd('autocmd! TermOpen term://* lua set_terminal_keymaps()')
